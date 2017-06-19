@@ -1,0 +1,90 @@
+---
+title: "Milestone Report for JHU"
+author: "xuanru shen"
+date: "3/18/2017"
+---
+
+Abstract
+This report is based on the John Hopkins capstone project instruction. It is a sub report in the second week called Milestone Report. We here apply the data we get from website containing blogs, news and twitter text data. Use the text mining method to get a n-gram word prediction idea and apply exploratory data analysis for those texts.
+
+Introduction
+- Datasets
+The datasets contains four languages with corpora of blogs, twitter and news. Here in this report, we mainly use English as an example (I don't know other language listed in the dataset).I saved my dataset at download/Course/ folder. I will use this as my working directory in the following report.  
+
+- technique applied 
+Text Mining and word cloud, some knowlegede of n-gram word prediction, markov-chain if needed. Basic exploratory data analysis is most essential.I use tm, wordcould and ggplot2 package for this report.
+
+--Loading Data
+```{r setup, include=FALSE}
+library(wordcloud) 
+library(tm)
+library(ggplot2)
+library(RColorBrewer)
+library(RWeka)
+```
+
+
+```{r,results='hide'}
+setwd("~/Downloads/Course")
+input_file<-file("en_US/en_US.blogs.txt",open = 'r')
+linn_USblogs <-readLines(input_file); close(input_file)
+# I tried colSums in this file but since the file is tsoo large,it cannot fun the function. Here just use the system2 to get the character/word/line count.
+system2("wc", args=" -c en_US/en_US.blogs.txt", stdout=TRUE)
+system2("wc", args=" -w en_US/en_US.blogs.txt", stdout=TRUE)
+system2("wc", args=" -l en_US/en_US.blogs.txt", stdout=TRUE)
+
+length(linn_USblogs); object.size(linn_USblogs)/1024/1024 # MB as unit
+USblogs<- VCorpus(VectorSource(linn_USblogs))
+```
+
+Preprocessing
+```{r,results='hide'}
+# Since it's text mining, we ignore numbers, punctuation and special characters and while space at this stage
+USblogs <- tm_map(USblogs, removeNumbers)
+USblogs <- tm_map(USblogs, removePunctuation)
+USblogs <- tm_map(USblogs, removeWords,stopwords("english"))
+USblogs <- tm_map(USblogs, stripWhitespace)
+# USblogs <- tm_map(USblogs, stemDocument)
+USblogs_dtm <- DocumentTermMatrix(USblogs)
+```
+
+Exploratory Data Analysis & Visualization
+```{r}
+findFreqTerms(USblogs_dtm,lowfreq=20000)
+dtm1 <- removeSparseTerms(USblogs_dtm, 0.99)
+# findAssocs(USblogs_dtm,'love',0.15)
+```
+
+
+After basic cleaning for the dataset, we then apply frequency analysis to it. We want to know the frequency of the words. Then applies the histogram to show the outcome. 
+```{r}
+freq <- sort(colSums(as.matrix(dtm1)),decreasing = TRUE)
+word_freq <- data.frame(word = names(freq),freq=freq)
+p <- ggplot(subset(word_freq,freq>54000),aes(word,freq))
+p <- p+geom_bar(stat = "identity",aes(fill = word)) +  
+  theme(axis.text.x = element_text(angle=90))
+p
+```
+
+
+Here we use the word Cloud to display the result
+```{r}
+wordcloud(names(freq), freq, min.freq=5000, scale=c(5, .1), colors=brewer.pal(8, "Spectral"))
+
+sample_blog<-sample(USblogs,100000)
+dtm3<-NGramTokenizer(sample_blog,Weka_control(min=3, max=3,delimiters=" \\r\\n\\t.,;:\"()?!"))
+dtm2<-NGramTokenizer(sample_blog,Weka_control(min=2, max=2,delimiters=" \\r\\n\\t.,;:\"()?!"))
+dtm2 <- data.frame(table(dtm2))
+fb2 <-dtm2[order(dtm2$Freq,decreasing=TRUE),]
+head(fb2)
+wordcloud(fb2$dtm2,fb2$Freq, min.freq=800, scale=c(3, 1), colors=brewer.pal(8, "Spectral"))
+dtm3 <- data.frame(table(dtm3))
+fb3 <-dtm3[order(dtm3$Freq,decreasing=TRUE),]
+head(fb3)
+wordcloud(fb3$dtm3, fb3$Freq, min.freq=150, scale = c(3,1), colors = brewer.pal(10, "PRGn"))
+```
+ 
+Further Work
+From the plots, we can find many words that have the higher frequency that doesn't have too much real meaning, like one, the, can etc. After getting this idea, we then would use the freqency to help predict the n-gram algorithm.
+
+The Shiny App for the prediction would be giving a short text(no matter how many words it has, the app would give the words coming next and showing the probability of it appearance. 

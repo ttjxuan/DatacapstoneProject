@@ -1,0 +1,43 @@
+presentation_shinyapp of word prediction
+========================================================
+author: Xuanru Shen
+date: 6-18-2017
+autosize: true
+
+Introduction
+========================================================
+
+This project is asking to using natural language processing method (NLP) to exploring n-gram word prediction. For more info about NLP, please visit
+<https://en.wikipedia.org/wiki/Natural_language_processing>.
+
+- Explore
+Geting the data from Coursera, I first check the data and decide to using en_US folder(means English as my standard language in this research). There are also language file like German. Then there are blogs, twitters and news data inside, as txt file. I using news mainly in this research. By doing many data cleaning like, ignore numbers, cases, and white spaces and stopword, also dealing with string is my first time in R, using stringr and corpus package helps a lot. 
+
+
+
+Report and Algorithm
+========================================================
+
+- Report
+In order to submitting the report, I am exploring the ngram using r package tm and within many useful function like NGramTokenizer to help extract the word. By getting a list of words with 2-gram, 3 gram and 4-gram, ordered by the frequency , the wordcloud is a good way to present the result. 
+
+- Algorithm
+Here for the word prediction, I tweak the last few word from a sentence or a phrase, them search from top by having a if condition meets, from 4 gram to 2 gram. If the first 3 word of the 4-gram word is the same as the last three of your input, then it would be chosen as the output. So on for the 3 gram and 2 gram. If there is no matching found exactly, then the backoff would be giving NA for the result.
+
+
+Things about ShinyApp
+========================================================
+
+By using this app, I am finding out the speed is good. Instead of using the for loop, I directly applying a if condition in order to save time. The app would give a word it found in my n gram list. Otherwise, it just shows NA.
+
+I am also thinking add a list of findings if possible and giving a possibility of the result by getting all the prequency number from my dataset and put that into consideration.
+
+
+Thank you
+========================================================
+Welcome to visit my page
+
+Github:<https://github.com/ttjxuan/DatacapstoneProject>
+
+Shinyapp:<https://ttjxuan.shinyapps.io/MyPredictionApp/>
+
